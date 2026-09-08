@@ -1,7 +1,7 @@
 # 森の子 MVP v0.5 — 実装と検証
 
 2026-09-08 作成。GitHub `main` の `46aac54` を起点に実装。
-作業ブランチ：`feat/playable-mvp`。
+実装時の作業ブランチ：`feat/playable-mvp`。ユーザーの指定により、完成したMVPを `main` に反映する。
 
 ## できあがった体験
 
