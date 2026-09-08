@@ -1,0 +1,14 @@
+{
+  "name": "morinoko",
+  "version": "0.5.0",
+  "private": true,
+  "description": "森の子 — ブラウザで遊べる育成ゲーム",
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node --test tests/game.test.cjs",
+    "test:browser": "node tests/browser-smoke.cjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

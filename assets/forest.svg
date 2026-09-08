@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" fill="none">
+<defs>
+ <linearGradient id="sky" x1="450" y1="0" x2="450" y2="460" gradientUnits="userSpaceOnUse"><stop stop-color="#e7ebd8"/><stop offset="1" stop-color="#d0ddbd"/></linearGradient>
+ <linearGradient id="ground" x1="0" y1="270" x2="0" y2="460" gradientUnits="userSpaceOnUse"><stop stop-color="#b6c9a0"/><stop offset="1" stop-color="#859f75"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#fffce0" stop-opacity=".9"/><stop offset="1" stop-color="#fffce0" stop-opacity="0"/></radialGradient>
+ <g id="pine"><path d="M0 110V195" stroke="#849a74" stroke-width="7"/><path d="m0 0-43 85h17l-35 58h122L26 85h17Z" fill="currentColor"/><path d="M0 27V141" stroke="#fff" stroke-opacity=".08" stroke-width="2"/></g>
+ <g id="bush"><ellipse cy="10" rx="45" ry="24" fill="currentColor"/><ellipse cx="-18" cy="-2" rx="23" ry="23" fill="currentColor"/><ellipse cx="16" cy="-8" rx="26" ry="29" fill="currentColor"/></g>
+ <g id="flower"><path d="M0 0v12m0-4-4-2" stroke="#869a6c" stroke-width="1.5"/><circle cx="-2" cy="-2" r="3" fill="#fbf5cd"/><circle cx="3" cy="-2" r="3" fill="#fbf5cd"/><circle cy="-6" r="3" fill="#fbf5cd"/><circle cy="-2" r="1.6" fill="#c6b274"/></g>
+ <g id="grass"><path d="m0 5-3-11m3 11L4-7m-4 12 9-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+ <g id="leaf"><path d="M0 0C-20-27-10-49 3-62 23-45 29-16 0 0Z" fill="currentColor"/><path d="m0 0 3-48" stroke="#dae4c4" stroke-opacity=".3" stroke-width="1.5"/></g>
+</defs>
+<path fill="url(#sky)" d="M0 0h900v460H0z"/>
+<circle cx="580" cy="90" r="210" fill="url(#glow)"/>
+<path d="M0 225c116-90 188-32 299-63s150-49 263-4 233-30 338 36v143H0Z" fill="#cad6ba"/>
+<g color="#bacdab" opacity=".55"><use href="#pine" transform="translate(42 33) scale(1.6)"/><use href="#pine" transform="translate(171 83) scale(1.1)"/><use href="#pine" transform="translate(705 15) scale(1.5)"/><use href="#pine" transform="translate(577 66)"/><use href="#pine" transform="translate(817 67)"/><use href="#pine" transform="translate(365 102) scale(.8)"/></g>
+<path d="M0 284c184-41 216-53 417-34s338-13 483 11v199H0Z" fill="url(#ground)"/>
+<path d="M900 280c-82-2-211-24-287 26-74 47-145 65-134 91s107 23 128 63h131c-33-54-111-50-126-66-43-44 168-66 288-71Z" fill="#cad0a6"/>
+<path d="M218 298c53 22 37 56 109 68 51 8 56 29 83 47" stroke="#c5cba0" stroke-width="29"/>
+<g color="#97b28b"><use href="#pine" transform="translate(110 48) scale(1.5)"/><use href="#pine" transform="translate(782 46) scale(1.7)"/><use href="#pine" transform="translate(670 95) scale(1.2)"/></g>
+<g color="#a7be94"><use href="#bush" transform="translate(378 261) scale(1.1)"/><use href="#bush" transform="translate(531 269) scale(.6)"/><use href="#bush" transform="translate(613 277) scale(.9)"/></g>
+<!-- A quiet little cottage. -->
+<path d="M158 202h137v106H158z" fill="#e5dbb7"/><path d="m146 208 78-85 85 84Z" fill="#7d9370"/>
+<path d="m160 207 65-68 69 68" stroke="#a2ae88" stroke-width="3"/><path d="M174 180h104m-91-16h76m-61-17h32" stroke="#b8be94" stroke-opacity=".3" stroke-width="2"/>
+<path d="M266 143v-31h18v50" fill="#a7aa88"/><path d="M265 112h20" stroke="#859779" stroke-width="5"/>
+<path d="M272 92c-14-13 17-13 5-29" stroke="#fffbea" stroke-opacity=".45" stroke-width="8" stroke-linecap="round"/>
+<path d="M207 308v-51a20 20 0 0 1 40 0v51" fill="#9fa386"/><path d="M210 307v-49a17 17 0 0 1 34 0v49" fill="#a8aa89"/>
+<circle cx="236" cy="276" r="2" fill="#7d8a66"/>
+<rect x="171" y="233" width="26" height="27" rx="5" fill="#9aab8a"/><rect x="174" y="236" width="20" height="21" rx="3" fill="#e8dbab"/><path d="M184 236v21m-10-11h20" stroke="#9aaa87" stroke-width="2"/>
+<rect x="258" y="233" width="26" height="27" rx="5" fill="#9aab8a"/><rect x="261" y="236" width="20" height="21" rx="3" fill="#ecdeaf"/><path d="M271 236v21m-10-11h20" stroke="#9aaa87" stroke-width="2"/>
+<path d="M155 308h145M166 288h32m59 0h33" stroke="#c4c4a0" stroke-width="4" stroke-linecap="round"/>
+<path d="M212 309h36v8h-36z" fill="#bcc09a"/><ellipse cx="184" cy="278" rx="18" ry="6" fill="#8c9d74"/><path d="m170 278 3 12h22l3-12" fill="#baa681"/><path d="m178 276-4-13m11 12 2-15m1 16 10-8" stroke="#86a06c" stroke-width="3" stroke-linecap="round"/>
+<!-- Low fence and garden. -->
+<path d="M63 280v55m27-62v56m28-62v57m-64-35 71-14m-66 42 67-15" stroke="#a0a484" stroke-width="6" stroke-linecap="round"/>
+<g color="#86a178"><use href="#bush" transform="translate(137 309) scale(.65)"/><use href="#bush" transform="translate(311 310) scale(.5)"/><use href="#bush" transform="translate(756 344) scale(1.2)"/></g>
+<!-- Sunlit grass and scattered flowers. -->
+<g color="#87a176"><use href="#grass" x="365" y="317"/><use href="#grass" x="497" y="337"/><use href="#grass" x="607" y="386"/><use href="#grass" x="327" y="414"/><use href="#grass" x="158" y="363"/><use href="#grass" x="805" y="400"/></g>
+<g><use href="#flower" x="364" y="342"/><use href="#flower" x="377" y="352" transform="rotate(8 377 352)"/><use href="#flower" x="542" y="361"/><use href="#flower" x="550" y="351"/><use href="#flower" x="653" y="405"/><use href="#flower" x="641" y="411"/><use href="#flower" x="257" y="379"/><use href="#flower" x="267" y="385"/></g>
+<ellipse cx="690" cy="338" rx="15" ry="6" fill="#a7b591"/><path d="M680 337c0-18 20-18 20 0" fill="#bdc5a8"/>
+<path d="M569 119q7-9 13 0 8-9 15 0m-78 26q5-7 10 0 5-7 10 0" stroke="#93a580" stroke-width="2" stroke-linecap="round"/>
+<!-- Foreground branches frame the clearing. -->
+<g color="#75936b"><use href="#pine" transform="translate(-35 -4) scale(2.4)"/><use href="#pine" transform="translate(938 18) scale(2.4)"/></g>
+<g color="#78966b"><use href="#bush" transform="translate(27 437) scale(1.8)"/><use href="#bush" transform="translate(868 439) scale(1.8)"/><use href="#bush" transform="translate(133 466) scale(1.3)"/><use href="#bush" transform="translate(754 476) scale(1.1)"/></g>
+<g color="#64855f"><use href="#leaf" transform="translate(74 475) rotate(-23) scale(1.4)"/><use href="#leaf" transform="translate(72 472) rotate(39) scale(1.1)"/><use href="#leaf" transform="translate(828 473) rotate(29) scale(1.4)"/><use href="#leaf" transform="translate(829 474) rotate(-37)"/></g>
+<path d="M141 412v12m15-10v13" stroke="#d5d7b4" stroke-width="5"/><path d="M131 413c0-16 20-16 20 0m-3 2c0-11 15-11 15 0" fill="#c4a082"/>
+</svg>
