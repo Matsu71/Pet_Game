@@ -1,23 +1,19 @@
 name: Resume mobile quality verification
-
 on:
   push:
     branches: ['improve/mobile-quality-2026-09-11']
-    paths: ['.github/workflows/resume-mobile-quality.yml']
+    paths: ['.github/workflows/resume-mobile-quality.yml', 'scripts/diagnose-browser.cjs']
   workflow_dispatch:
-
 permissions:
   contents: write
-
 concurrency:
   group: integrate-mobile-quality-${{ github.ref }}
   cancel-in-progress: false
-
 jobs:
   resume:
     if: github.repository == 'Matsu71/Pet_Game' && github.ref == 'refs/heads/improve/mobile-quality-2026-09-11'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,28 +21,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Resume only if the recovered application has not been integrated
+      - name: Recover unintegrated source without overwriting later work
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        shell: bash
         run: |
-          set -euo pipefail
+          set -eu
           if node -e "const g=require('./game.js'),j=require('./journey.js');require('./persistence.js');if(require('./package.json').version!=='0.7.0'||j.STORIES?.length!==8||j.ALBUM?.length!==12||!g.validate(g.fresh()))process.exit(1)"; then
-            echo 'Integrated source is present; verifying it without overwriting it.'
+            echo 'Integrated application found; verifying current files.'
           else
             node scripts/integrate-mobile-quality.cjs
           fi
-      - name: Install reproducible verification tools
-        shell: bash
+          node scripts/diagnose-browser.cjs
+      - name: Install locked browser tools
         run: |
-          set -euo pipefail
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install --save-dev --save-exact playwright@1.55.0 axe-core@4.10.3
-          fi
+          if [ -f package-lock.json ]; then npm ci; else npm install --save-dev --save-exact playwright@1.55.0 axe-core@4.10.3; fi
           npx playwright install --with-deps chromium webkit
-      - name: Run complete rule and browser verification
+      - name: Verify actual delivery, rules and both browsers
         shell: bash
         run: |
           set -euo pipefail
@@ -56,34 +46,30 @@ jobs:
           SERVER_PID=$!
           trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            if curl --fail --silent http://127.0.0.1:4173/persistence.js > /dev/null; then break; fi
             sleep 1
           done
           npm run test:browser | tee quality-artifacts/browser.log
           node scripts/integrate-mobile-quality.cjs --report
           cat docs/QUALITY_REPORT.md >> "$GITHUB_STEP_SUMMARY"
-      - name: Preserve only verified changes on the improvement branch
+      - name: Commit verified application to improvement branch only
         shell: bash
         run: |
           set -euo pipefail
           BRANCH='improve/mobile-quality-2026-09-11'
           REMOTE_HEAD=$(git ls-remote origin "refs/heads/$BRANCH" | cut -f1)
-          if [ "$REMOTE_HEAD" != "$GITHUB_SHA" ]; then
-            echo 'Concurrent changes detected. Tested source is retained as an artifact; no overwrite or force push.'
-            exit 1
-          fi
+          test "$REMOTE_HEAD" = "$GITHUB_SHA" || { echo 'Concurrent changes; source preserved without overwriting.'; exit 1; }
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add game.js journey.js persistence.js art.js app.js style.css index.html offline.js sw.js manifest.webmanifest assets/icon-192.png assets/icon-512.png package.json package-lock.json README.md tests docs
+          git add game.js journey.js persistence.js art.js app.js style.css index.html offline.js sw.js manifest.webmanifest server.cjs assets/icon-192.png assets/icon-512.png package.json package-lock.json README.md tests docs
           git diff --cached --check
           if ! git diff --cached --quiet; then
-            git commit -m 'test: verify mobile release and preserve current evidence'
+            git commit -m 'feat: integrate verified mobile gameplay and resilient saves'
             git push origin "HEAD:refs/heads/$BRANCH"
           fi
           git rev-parse HEAD > quality-artifacts/verified-commit.txt
-      - name: Preserve evidence even if verification fails
+      - name: Retain source and diagnostics even on failure
         if: always()
-        shell: bash
         run: |
           mkdir -p quality-artifacts
           git diff > quality-artifacts/uncommitted.diff
