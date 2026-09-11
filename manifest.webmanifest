@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "森の子 — Forest & You",
+  "short_name": "森の子",
+  "description": "お世話と言葉で育つ、森の小さな暮らし。",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f3e9",
+  "theme_color": "#365e45",
+  "icons": [
+    {"src":"assets/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"assets/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}
