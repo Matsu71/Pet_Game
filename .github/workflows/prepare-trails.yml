@@ -1,0 +1,105 @@
+name: Verify traits and trails
+on:
+  push:
+    branches: ['improve/traits-trails-20260911']
+    paths: ['.github/workflows/prepare-trails.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: traits-trails-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/improve/traits-trails-20260911' && github.repository == 'Matsu71/Pet_Game'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply byte-verified source edits without changing workflows
+        run: |
+          mkdir -p quality-artifacts
+          python - <<'PY'
+          import json, pathlib, hashlib, os, subprocess
+          paths=[]
+          for package in ['.delivery/v09-part1.json','.delivery/v09-part2.json']:
+              changes=json.loads(pathlib.Path(package).read_text())
+              for name, item in changes.items():
+                  p=pathlib.Path(name)
+                  assert not p.is_absolute() and '..' not in p.parts and p.parts[0] not in ['.github','.git','.delivery']
+                  original=p.read_bytes()
+                  assert hashlib.sha256(original).hexdigest()==item['before'], 'Changed baseline: '+name
+                  text=original.decode('utf-8')
+                  for op in reversed(item['ops']):
+                      assert isinstance(op['at'],int) and isinstance(op['remove'],int)
+                      assert 0<=op['at']<=len(text) and 0<=op['remove']<=len(text)-op['at']
+                      text=text[:op['at']]+op['text']+text[op['at']+op['remove']:]
+                  result=text.encode('utf-8')
+                  assert hashlib.sha256(result).hexdigest()==item['after'], 'Transfer mismatch: '+name
+                  p.write_bytes(result);paths.append(name)
+          paths+=['world.js','tests/world.test.cjs']
+          env={**os.environ,'GIT_INDEX_FILE':'/tmp/traits-source-index'}
+          subprocess.run(['git','read-tree','5880e5dbd59dc10a0a561adbce548a44d4e99bb8'],env=env,check=True)
+          subprocess.run(['git','add','--',*paths],env=env,check=True)
+          tree=subprocess.check_output(['git','write-tree'],env=env,text=True).strip()
+          assert tree=='088e8514fe0656e5963c48a88a692dda78b9081e', 'Source tree differs from locally tested source'
+          pathlib.Path('quality-artifacts/source-paths.json').write_text(json.dumps(paths))
+          subprocess.run(['git','add','--',*paths],check=True)
+          PY
+          git diff --cached --check
+          npm test > quality-artifacts/unit.tap
+      - name: Commit normal application source to the improvement branch
+        run: |
+          set -eu
+          test "$(git ls-remote origin "$GITHUB_REF" | cut -f1)" = "$GITHUB_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'feat: personality-aware pets and four resumable exploration routes'
+          git push origin "HEAD:$GITHUB_REF"
+          git rev-parse HEAD > quality-artifacts/source-commit.txt
+      - name: Install locked verification dependencies
+        run: |
+          npm ci
+          npm audit --audit-level=high
+          npx playwright install --with-deps chromium webkit
+      - name: Verify the complete experience in both browsers
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in *.js *.cjs scripts/*.cjs; do node --check "$file"; done
+          npm start > quality-artifacts/server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/world.js > /dev/null; then break; fi
+            sleep 1
+          done
+          GITHUB_SHA=$(git rev-parse HEAD) npm run test:browser | tee quality-artifacts/browser.log
+          GITHUB_SHA=$(git rev-parse HEAD) node scripts/quality-report.cjs --publish > quality-artifacts/report.log
+          cat docs/QUALITY_REPORT.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve successful browser evidence in the repository
+        run: |
+          set -eu
+          test "$(git ls-remote origin "$GITHUB_REF" | cut -f1)" = "$(cat quality-artifacts/source-commit.txt)"
+          git add docs/QUALITY_REPORT.md docs/research/quality-evidence.json docs/screenshots
+          git diff --cached --check
+          git commit -m 'test: record verified traits, route previews and travel journal'
+          git push origin "HEAD:$GITHUB_REF"
+      - name: Archive all source and diagnostics
+        if: always()
+        run: |
+          mkdir -p quality-artifacts
+          git archive --format=zip HEAD > quality-artifacts/source.zip
+          git rev-parse HEAD > quality-artifacts/commit.txt
+          git diff > quality-artifacts/uncommitted.diff
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trails-verification-${{ github.run_id }}
+          path: quality-artifacts/
+          retention-days: 30
