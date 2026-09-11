@@ -1,11 +1,11 @@
 /* Forest & You: mobile-first interface. Simulation, journey rules and vector art are separate. */
 (() => {
   'use strict';
-  const G = window.ForestGame, J = window.ForestJourney, {icon, petSVG} = window.ForestArt;
+  const G = window.ForestGame, J = window.ForestJourney, V = window.ForestVillage, VV = window.ForestVillageView, {icon, petSVG} = window.ForestArt;
   const $ = id => document.getElementById(id), KEY = mode => `forest-child-mvp-v2-${mode}`;
   const LAST_MODE = 'forest-child-mvp-mode', PREFS = 'forest-child-preferences-v1';
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const valid = s => G.validate(s) && J.validate(s);
+  const valid = s => G.validate(s) && J.validate(s) && V.validate(s);
   let store;
   try { store = window.ForestPersistence.create(localStorage, valid); }
   catch { store = window.ForestPersistence.create(null, valid); }
@@ -125,7 +125,7 @@
   }
   function villageView() {
     const living = G.alive(state), dead = state.creatures.filter(c=>c.dead), needy = living.filter(c=>c.sick || (G.age(state,c)<8 && (c.hunger<55 || c.hygiene<55)));
-    return `<div class="page-heading"><p class="eyebrow">OUR LITTLE VILLAGE</p><h1>森のなかまたち</h1><p>${living.length} / 8体の暮らし。子どもには、みんなにお世話を。</p><button class="button primary" data-action="rescue" ${living.length>=8 || state.adventure ? 'disabled' : ''}>${icon('leaf')} 新しい子を迎える</button></div>${needy.length ? `<button class="care-alert needy-link" data-select="${esc(needy[0].id)}">${needy.length}体がお世話を待っています · ${esc(needy[0].name)}に会う →</button>` : ''}<div class="village-grid">${living.map(resident).join('')}</div><section class="card discovery-strip"><h2>森での出会い ${state.discovered.length}/4</h2><div class="discovery-icons">${Object.keys(G.SPECIES).map(species=>`<div class="${state.discovered.includes(species)?'':'locked'}">${petSVG({species})}<span>${G.SPECIES[species].name}</span></div>`).join('')}</div></section>${dead.length ? `<section class="memorial"><h2>村に残る思い出</h2><p>旅立った子は、8体の枠には含まれません。</p><div class="village-grid">${dead.map(resident).join('')}</div></section>` : ''}`;
+    return `<div class="page-heading"><p class="eyebrow">OUR LITTLE VILLAGE</p><h1>森のなかまたち</h1><p>${living.length} / 8体の暮らし。子どもには、みんなにお世話を。</p><button class="button primary" data-action="rescue" ${living.length>=8 || state.adventure ? 'disabled' : ''}>${icon('leaf')} 新しい子を迎える</button></div>${needy.length ? `<button class="care-alert needy-link" data-select="${esc(needy[0].id)}">${needy.length}体がお世話を待っています · ${esc(needy[0].name)}に会う →</button>` : ''}${VV.scene(state)}${VV.friendships(state)}<div class="section-heading"><h2>村に暮らす仲間</h2></div><div class="village-grid">${living.map(resident).join('')}</div><section class="card discovery-strip"><h2>森での出会い ${state.discovered.length}/4</h2><div class="discovery-icons">${Object.keys(G.SPECIES).map(species=>`<div class="${state.discovered.includes(species)?'':'locked'}">${petSVG({species})}<span>${G.SPECIES[species].name}</span></div>`).join('')}</div></section>${dead.length ? `<section class="memorial"><h2>村に残る思い出</h2><p>旅立った子は、8体の枠には含まれません。</p><div class="village-grid">${dead.map(resident).join('')}</div></section>` : ''}`;
   }
   function journalView() {
     return `<div class="page-heading"><p class="eyebrow">THE DAYS WE SHARED</p><h1>一緒に過ごした日々</h1><p>できたことも、何気ないひと言も。新しい順に150件を記録します。</p></div>${albumCard()}<div class="journal-layout"><section class="card journal-card"><h2>はじまりの手帖</h2>${G.QUESTS.map(q=>`<div class="achievement ${state.quests.includes(q.id)?'complete':''}"><span aria-hidden="true">${state.quests.includes(q.id)?'✓':'○'}</span><div><h3>${q.name}</h3><p>${q.detail}</p></div><b>${q.reward} G</b></div>`).join('')}</section><section class="card journal-card"><h2>思い出の記録</h2><ol class="timeline">${state.logs.map(l=>`<li><time>${new Date(l.at).toLocaleDateString('ja-JP',{month:'short',day:'numeric'})}</time><p>${esc(l.text)}</p></li>`).join('')}</ol></section></div>`;
@@ -220,6 +220,10 @@
     if(b.dataset.species){selectedSpecies=b.dataset.species;document.querySelectorAll('[data-species]').forEach(o=>{o.classList.toggle('selected',o.dataset.species===selectedSpecies);o.setAttribute('aria-pressed',String(o.dataset.species===selectedSpecies));});return;}
     if(!state)return;G.sync(state);
     if(b.dataset.view){navigate(b.dataset.view);return;}
+    if(b.dataset.site){const panel=VV.siteDialog(state,b.dataset.site);if(panel)modal(panel.title,panel.body,'village-site');return;}
+    if(b.dataset.buildSite || b.dataset.visitSite){const id=b.dataset.buildSite || b.dataset.visitSite;const r=b.dataset.buildSite?V.build(state,id):V.visit(state,id);if(outcome(r)){const panel=VV.siteDialog(state,id);if(panel)modal(panel.title,panel.body,'village-site');toast(r.message);}return;}
+    if(b.dataset.social){const panel=VV.meetingDialog(state,b.dataset.social);if(panel)modal(panel.title,panel.body,'meeting');return;}
+    if(b.dataset.meet){const r=V.meet(state,b.dataset.partner,b.dataset.meet);closeModal();outcome(r,'talk',r.ok?'play':null);return;}
     if(b.dataset.select){if(!state.creatures.some(c=>c.id===b.dataset.select))return;state.active=b.dataset.select;draft='';save();navigate('home');return;}
     if(b.dataset.say){sendWords(b.dataset.say);return;}
     if(b.dataset.buy){const r=G.buy(state,b.dataset.buy);if(outcome(r)){shop();toast(r.message);}return;}
@@ -237,6 +241,7 @@
     if(action==='profile')profile();
     if(action==='play-open')navigate('explore');
     if(action==='claim')outcome(J.claim(state),'talk');
+    if(action==='village-visit-all')outcome(V.visitAll(state));
     if(action==='shop')shop();
     if(action==='decorate')decorations();
     if(action==='memory'){const r=J.startMemory(state);if(r.ok){save();memoryDialog();}else toast(r.message);}

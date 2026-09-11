@@ -66,6 +66,32 @@ async function runEngine(name){
     const wage=(await read()).coins;await page.locator('#job-select').selectOption('merchant');assert.equal((await read()).coins,wage);await close();await click('next-day');assert.equal((await read()).coins,wage+55);check('tutorial through adulthood and non-duplicated wages');
     await nav('journal');assert.equal(await page.locator('.album-card').count(),12);assert(await page.locator('.album-card.earned').count()>=4);await page.screenshot({path:path.join(output,'mobile-album.png'),fullPage:true});
     await nav('village');await click('rescue');await page.locator('[data-species="rabbit"]').click();await page.locator('#new-name').fill('ルゥ');await click('confirm-rescue');assert.equal((await read()).creatures.length,2);check('resident collection and memory album');
+    await nav('village');assert.equal(await page.locator('[data-site]').count(),7);
+    for(const width of [320,360,390,768]){
+      await page.setViewportSize({width,height:844});
+      assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`village overflow at ${width}`);
+      assert(await page.locator('.village-site').evaluateAll(nodes=>nodes.every(n=>{const r=n.getBoundingClientRect();return r.width>=44&&r.height>=44;})));
+    }
+    await page.setViewportSize({width:390,height:844});
+    const constructionCoins=(await read()).coins;
+    await page.locator('.village-site[data-site="well"]').click();
+    await page.locator('[data-build-site="well"]').click();assert.equal((await read()).coins,constructionCoins-60);
+    assert.equal(await page.locator('[data-build-site="well"]').count(),0);await close();
+    await page.locator('.village-site[data-site="orchard"]').click();await page.locator('[data-build-site="orchard"]').click();await close();
+    await click('village-visit-all');assert(await page.locator('[data-action="village-visit-all"]').isDisabled());
+    await page.locator('[data-social]').first().click();await page.locator('[data-meet="listen"]').click();
+    const relationships=(await read()).community.bonds;assert.equal(relationships.length,1);assert(relationships[0].value>0);
+    await page.locator('[data-social]').first().click();assert(await page.locator('[data-meet="walk"]').isDisabled());await close();
+    await page.reload();await nav('village');assert.equal((await read()).community.sites.length,2);assert.equal((await read()).community.bonds[0].value,relationships[0].value);
+    assert(await page.locator('[data-action="village-visit-all"]').isDisabled());
+    await page.locator('#toast.visible').waitFor({state:'hidden',timeout:6000});await page.screenshot({path:path.join(output,'mobile-village.png'),fullPage:true});
+    await page.addScriptTag({path:require.resolve('axe-core/axe.min.js')});
+    const villageA11y=await page.evaluate(async()=>{const r=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});return r.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>n.target)}));});
+    await fs.writeFile(path.join(output,'village-accessibility.json'),JSON.stringify(villageA11y,null,2));
+    assert.equal(villageA11y.filter(v=>['critical','serious'].includes(v.impact)).length,0,JSON.stringify(villageA11y));
+    check('village construction, daily shared benefits, symmetric friendships, persistence and accessibility');
+    await nav('home');
+
     await click('settings');await click('switch-mode');await page.locator('#pet-name').fill('ソラ');await page.locator('[data-start="real"]').click();assert.equal(await page.locator('[data-action="next-day"]').count(),0);
     await click('settings');await click('switch-mode');assert.equal((await read()).creatures.length,2);assert.equal(await page.locator('.pet-name h2').innerText(),'ルゥ');check('independent demo and real villages');
     await click('settings');const promise=page.waitForEvent('download');await click('export');const download=await promise;

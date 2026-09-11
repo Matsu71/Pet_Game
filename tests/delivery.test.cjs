@@ -9,7 +9,7 @@ function worker(scope){
  const handlers={},added=[],deleted=[],matches=[],network=[];
  const prefix='forest-you-'+encodeURIComponent(new URL(scope).pathname)+'-';
  const cache={addAll:async urls=>added.push(...urls),match:async url=>{matches.push(String(url));return{cached:String(url)};}};
- const keys=[prefix+'old-release',prefix+'20260911-mobile-1','forest-you-'+encodeURIComponent('/Another_Game/')+'-old','unrelated-cache'];
+ const keys=[prefix+'old-release',prefix+'20260911-village-3','forest-you-'+encodeURIComponent('/Another_Game/')+'-old','unrelated-cache'];
  const context={URL,self:{registration:{scope},addEventListener:(key,fn)=>handlers[key]=fn,clients:{claim:async()=>{}}},caches:{open:async()=>cache,keys:async()=>keys,delete:async key=>{deleted.push(key);return true;}},fetch:async request=>{network.push(request.url);return{network:true};}};
  vm.runInNewContext(fs.readFileSync(path.join(ROOT,'sw.js'),'utf8'),context);
  return{handlers,added,deleted,matches,network,prefix};
@@ -39,7 +39,7 @@ test('offline navigation returns the same cached application entry point',async(
  const response=await task;assert.equal(response.cached,'https://example.github.io/Pet_Game/index.html');assert.deepEqual(w.network,[]);
 });
 test('runtime code and local art remain within a 300 KB uncompressed budget',()=>{
- const files=['index.html','game.js','journey.js','persistence.js','art.js','app.js','style.css','offline.js','sw.js','manifest.webmanifest','favicon.svg','assets/forest.svg','assets/icon-192.png','assets/icon-512.png'];
+ const files=['index.html','game.js','journey.js','village.js','village-ui.js','village.css','persistence.js','art.js','app.js','style.css','offline.js','sw.js','manifest.webmanifest','favicon.svg','assets/forest.svg','assets/icon-192.png','assets/icon-512.png'];
  const bytes=files.reduce((total,file)=>total+fs.statSync(path.join(ROOT,file)).size,0);
  assert(bytes<=300000,`Runtime payload is ${bytes} bytes; inspect before expanding it.`);
  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
