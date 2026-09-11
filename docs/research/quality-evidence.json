@@ -1,12 +1,12 @@
 {
-  "testedAt": "2026-09-11T11:33:38.376Z",
-  "inputCommit": "8b868d6bdbd179014dc6695946ffe3198e680e30",
-  "version": "0.8.0",
-  "tests": 84,
+  "testedAt": "2026-09-11T12:05:15.247Z",
+  "inputCommit": "ff87d7d3b20356b8c80fd14c33e9b84a32664fa7",
+  "version": "0.9.0",
+  "tests": 102,
   "failures": 0,
   "browser": {
-    "sourceCommit": "8b868d6bdbd179014dc6695946ffe3198e680e30",
-    "startedAt": "2026-09-11T11:33:01.038Z",
+    "sourceCommit": "ff87d7d3b20356b8c80fd14c33e9b84a32664fa7",
+    "startedAt": "2026-09-11T12:04:33.870Z",
     "engines": [
       {
         "engine": "chromium",
@@ -29,7 +29,8 @@
           "no critical or serious automated accessibility violations on home",
           "offline reload and interaction",
           "play remains available when storage is denied",
-          "direct file launch without a server"
+          "direct file launch without a server",
+          "four routes, legible selector, honest outcome previews, resumable trips and per-pet travel journal"
         ],
         "viewportChecks": [
           {
@@ -301,7 +302,8 @@
           "recovery from a damaged primary save",
           "no critical or serious automated accessibility violations on home",
           "play remains available when storage is denied",
-          "direct file launch without a server"
+          "direct file launch without a server",
+          "four routes, legible selector, honest outcome previews, resumable trips and per-pet travel journal"
         ],
         "viewportChecks": [
           {
@@ -556,22 +558,23 @@
     ],
     "scope": "Browser emulation, not physical-device or user-retention testing.",
     "status": "passed",
-    "finishedAt": "2026-09-11T11:33:38.324Z"
+    "finishedAt": "2026-09-11T12:05:15.195Z"
   },
-  "runtimeBytes": 171572,
+  "runtimeBytes": 193052,
   "sourceHashes": {
-    "index.html": "4291bbe1dea1d7a5c22980f1b27d71109614704af16389ed59f84ed5e7995803",
-    "style.css": "a6070abb2ddf2100189f20ca3c2add995f5a1201a192ccf87a0de8d8cfe9d286",
-    "app.js": "092bd032eb5b163101ab46f28cb146dd8a048931f8608eaf4cb538be60f3c3bb",
-    "game.js": "4ac265f98adf8ca8eae8d4c5b1f0b8d7cb66336869daea97cb372fec724b4226",
+    "index.html": "4541a0ba55147a7e555d77aee20c6e48c8c00f895fc647f796a329a4b3f8feb3",
+    "style.css": "66aef9565f4297cb73995248e1ff5d2b6ee3adb0e703752d8be947b6bbd12a02",
+    "app.js": "540dc0332f589c67708a138e827f0673db010e523fc19980f97a3fce09ec69e4",
+    "game.js": "e5dfe5c61a2adab3b97b41f9d36af7930776ec3eb764cfc7d777bf92b4ab1e74",
+    "world.js": "ad155c2b4f2c6f93dbc624aa4eea87a5e647745f4ea75037aa3076d3021e5e11",
     "journey.js": "ad5c75cc2db3a33c8315c38623c0cb3f34bc70d968024870bf5e76596237a1db",
-    "art.js": "907c9ca8259176dbf1369bf070ecc79704dda770381c3810eee88b1e6ee0524b",
+    "art.js": "1356dcbf236bee99914020995f0de7755aa43c8dd544d37ba6196678adf74d7a",
     "village.js": "76eedc8fe5ae6965dd8780942d9f91e3affb9ed3bfe64495a2ae7de276f8239b",
     "village-ui.js": "2c7a57b5c6a373b51d12f92acc39e46a94733f46fb676090e4c9d7b247d4c7f3",
     "village.css": "bf1317b5abd5b4d3833c96f9dab17c3cd3b1d607eda276af79c07e09c7cf4391",
     "persistence.js": "0ea0d80d70bf357a7ac7a5ea8f30ee7ae69f9f4f31dd2a503ad971cf9f8060b8",
     "offline.js": "b1f216cb8a0b181a3112f028c366de7f3338bc8bd028ed0dc3a6cfabb20641cd",
-    "sw.js": "4f7b553b3406f28077acf783775236b5a30e8177f0ac723f2fc0dde8a80fc37f",
+    "sw.js": "4a59d749614fa9054bbf260b852624a933bd3842ddd5906b8e30cca25e1e534d",
     "manifest.webmanifest": "d79629bbd7d2f5049bb7cdc7061cdb2a9b3df11d8683ef37c5ea629c1d3e9621",
     "favicon.svg": "a1d71b8ac9a8a567f5b763689d7c98bac05ba54eb1017d87bd7c241aefe237b1",
     "assets/forest.svg": "b19a3adde4a73af937ed527b98ae46b556ecdbe83df2d7d56d414563ee2d5c63",

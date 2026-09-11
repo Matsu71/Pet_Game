@@ -59,7 +59,7 @@ async function runEngine(name){
     const beforeClaim=(await read()).coins;await click('claim');assert.equal((await read()).coins,beforeClaim+15);assert(await page.locator('[data-action="claim"]').isDisabled());check('daily story and one-time celebration');
     await click('decorate');const coins=(await read()).coins;await page.locator('[data-decor="meadow"]').click();assert.equal((await read()).coins,coins-35);
     await page.locator('[data-decor="none"]').click();await page.locator('[data-decor="meadow"]').click();assert.equal((await read()).coins,coins-35);await close();assert(await page.locator('.garden-meadow').isVisible());check('persistent decorations without repeated charges');
-    await nav('explore');await click('adventure');await page.locator('[data-choice="1"]').click();await close();await page.reload();await nav('explore');await click('adventure');
+    await nav('explore');await click('adventure');await page.locator('[data-route="forest"]').click();await page.locator('[data-choice="1"]').click();await close();await page.reload();await nav('explore');await click('adventure');
     assert.equal((await read()).adventure.step,1);await page.locator('[data-choice="1"]').click();await page.locator('[data-choice="1"]').click();await click('finish-adventure');assert.equal((await read()).adventure,null);check('adventure resume and finish');
     for(let i=0;i<8;i++){for(const action of ['feed','bath'])if(await page.locator(`[data-action="${action}"]`).isEnabled())await click(action);await click('next-day');}
     assert.match(await page.locator('.pet-meta').innerText(),/8歳/);await click('profile');await page.locator('#job-select').selectOption('herbalist');assert.equal((await read()).quests.length,6);
@@ -115,6 +115,39 @@ async function runEngine(name){
     await deniedContext.addInitScript(()=>{Storage.prototype.getItem=()=>{throw new DOMException('Denied','SecurityError');};Storage.prototype.setItem=()=>{throw new DOMException('Denied','SecurityError');};});
     const denied=await deniedContext.newPage();denied.on('pageerror',e=>errors.push(e.message));await denied.goto(BASE);await denied.locator('[data-start="demo"]').click();await denied.locator('[data-action="feed"]').click();assert.match(await denied.locator('#save-state').innerText(),/保存できません/);await deniedContext.close();check('play remains available when storage is denied');
     const fileContext=await browser.newContext({reducedMotion:'reduce'});const local=await fileContext.newPage();local.on('pageerror',e=>errors.push(e.message));await local.goto(pathToFileURL(path.join(__dirname,'..','index.html')).href);await local.locator('[data-start="demo"]').click();await local.locator('[data-action="feed"]').click();assert(await local.locator('.forest-art').evaluate(img=>img.complete&&img.naturalWidth>0));await fileContext.close();check('direct file launch without a server');
+    // Independent real UI session: finish every route, preserve per-pet stamps and inspect choices.
+    const trailsContext=await browser.newContext({viewport:{width:320,height:568},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
+    const trails=await trailsContext.newPage();trails.on('pageerror',e=>errors.push(e.message));await trails.goto(BASE);await trails.locator('[data-start="demo"]').click();
+    const trailClick=action=>trails.locator(`[data-action="${action}"]`).first().click();
+    for(const route of ['forest','meadow','brook','ridge']){
+      await trailClick('feed');await trailClick('bath');
+      await trails.locator('.nav-button[data-view="explore"]').click();await trailClick('adventure');
+      assert.equal(await trails.locator('[data-route]').count(),4);
+      assert(await trails.locator('dialog').evaluate(d=>d.scrollWidth<=d.clientWidth),'route sheet overflow');
+      if(route==='meadow'){
+        await trails.addScriptTag({path:require.resolve('axe-core/axe.min.js')});
+        const a11y=await trails.evaluate(async()=>{const r=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});return r.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>n.target)}));});
+        await fs.writeFile(path.join(output,'route-accessibility.json'),JSON.stringify(a11y,null,2));assert.equal(a11y.filter(v=>['critical','serious'].includes(v.impact)).length,0,JSON.stringify(a11y));
+        await trails.screenshot({path:path.join(output,'mobile-routes.png'),fullPage:false});
+      }
+      await trails.locator(`[data-route="${route}"]`).click();
+      for(let step=0;step<3;step++){
+        assert.equal(await trails.locator('.choice-outlook').count(),2);
+        const current=await trails.evaluate(()=>{const s=JSON.parse(localStorage.getItem('forest-child-mvp-v2-demo'));return{preview:ForestGame.previewChoice(s,0),coins:s.adventure.coins,route:s.adventure.route};});
+        assert.equal(current.route,route);assert((await trails.locator('.choice-outlook').first().innerText()).includes(`${current.preview.coins} G`));
+        await trails.locator('[data-choice="0"]').click();
+        assert.equal(await trails.evaluate(()=>JSON.parse(localStorage.getItem('forest-child-mvp-v2-demo')).adventure.coins),current.coins+current.preview.coins);
+        if(step===0){await trailClick('close');await trails.reload();await trails.locator('.nav-button[data-view="explore"]').click();await trailClick('adventure');assert.equal(await trails.locator('[data-route]').count(),0);}
+      }
+      await trailClick('finish-adventure');await trails.locator('.nav-button[data-view="explore"]').click();
+      assert(await trails.locator('[data-action="adventure"]').isDisabled(),'day allowance spans every route');
+      await trails.locator('.nav-button[data-view="home"]').click();await trailClick('next-day');
+    }
+    await trails.locator('.nav-button[data-view="journal"]').click();assert.equal(await trails.locator('.trail-stamp.visited').count(),4);await trails.screenshot({path:path.join(output,'mobile-trail-journal.png'),fullPage:true});
+    await trails.reload();await trails.locator('.nav-button[data-view="journal"]').click();assert.equal(await trails.locator('.trail-stamp.visited').count(),4);
+    await trails.locator('.nav-button[data-view="home"]').click();await trailClick('pet');const reply=await trails.locator('.pet-speech').innerText();
+    assert(reply.length>0);await trailClick('profile');assert(await trails.locator('.temperament-note').isVisible());
+    await trailsContext.close();check('four routes, legible selector, honest outcome previews, resumable trips and per-pet travel journal');
     assert.deepEqual(errors,[]);
     const summary={engine:name,status:'passed',checks,viewportChecks,accessibility,errors};results.engines.push(summary);await fs.writeFile(path.join(output,'result.json'),JSON.stringify(summary,null,2));await context.close();
   }catch(error){
