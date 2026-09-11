@@ -1,0 +1,56 @@
+name: Game quality
+on:
+  push:
+    branches: [main, 'improve/mobile-quality-2026-09-11']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: game-quality-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install reproducible verification tools
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium webkit
+      - name: Verify source and all gameplay paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p quality-artifacts
+          git diff --check
+          for file in *.js *.cjs scripts/*.cjs; do node --check "$file"; done
+          npm test | tee quality-artifacts/unit.tap
+          npm start > quality-artifacts/server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/village.js > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:browser | tee quality-artifacts/browser.log
+          node scripts/quality-report.cjs > quality-artifacts/report.log
+          cat quality-artifacts/QUALITY_REPORT.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Archive exact tested source
+        if: always()
+        run: |
+          mkdir -p quality-artifacts
+          git archive --format=zip HEAD > quality-artifacts/source.zip
+          git rev-parse HEAD > quality-artifacts/commit.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: game-quality-${{ github.sha }}
+          path: quality-artifacts/
+          retention-days: 30

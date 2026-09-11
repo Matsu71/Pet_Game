@@ -1,0 +1,37 @@
+'use strict';
+const {test} = require('node:test');
+const assert = require('node:assert/strict');
+const G = require('../game.js');
+const J = require('../journey.js');
+const fresh = () => G.fresh('demo', 'ミオ', 'fox', Date.UTC(2026,8,11,3), () => .5);
+const valid = s => { assert(G.validate(s), 'base state must remain valid'); assert(J.validate(s), 'journey state must remain valid'); };
+function win(s) {
+  assert(J.startMemory(s, () => .5).ok);
+  const deck = s.journey.memory.deck;
+  for (let symbol=0; symbol<3; symbol++) for (let i=0; i<6; i++) if(deck[i]===symbol) assert(J.flip(s,i).ok);
+  assert(s.journey.memory.complete); valid(s);
+}
+function day(s) { G.care(s,'feed'); G.care(s,'bath'); assert(G.advance(s).ok); }
+test('original version-two saves need no destructive migration',()=>{const s=fresh();assert(J.validate(s));const original=structuredClone(s);J.ensure(s);valid(s);delete s.journey;assert.deepEqual(s,original);});
+test('the three daily wishes are idempotent and are not rewarded early',()=>{const s=fresh(), coins=s.coins;assert(!J.claim(s).ok);for(const w of Object.keys(J.WISHES)){assert(J.mark(s,w));assert(!J.mark(s,w));}assert.equal(J.record(s).bond,9);assert(J.claim(s).ok);assert(!J.claim(s).ok);assert.equal(s.coins,coins+15);valid(s);});
+test('missed days do not remove earned bond or celebrations',()=>{const s=fresh();for(const w of Object.keys(J.WISHES))J.mark(s,w);J.claim(s);day(s);day(s);assert.equal(J.record(s).bond,9);assert.equal(J.record(s).days,1);assert.deepEqual(J.record(s).wishes,[]);assert(!J.record(s).claimed);valid(s);});
+test('daily records belong to the correct resident',()=>{const s=fresh(), first=s.active;J.mark(s,'care');G.rescue(s,'cat','ソラ');assert.equal(J.record(s).bond,0);J.mark(s,'talk');assert.equal(J.record(s,first).bond,3);valid(s);});
+test('garden ownership survives removing and re-equipping it',()=>{const s=fresh();s.coins=250;assert(J.decorate(s,'meadow').ok);assert.equal(s.coins,215);assert(J.decorate(s,'none').ok);assert(J.decorate(s,'meadow').ok);assert.equal(s.coins,215);assert.deepEqual(s.journey.owned,['meadow']);valid(s);});
+test('unaffordable or unrecognized decorations never spend currency',()=>{const s=fresh();J.ensure(s);const before=JSON.stringify(s);for(const k of ['lantern','constructor','__proto__','unknown'])assert(!J.decorate(s,k).ok);assert.equal(JSON.stringify(s),before);});
+test('matched cards cannot be collected twice',()=>{const s=fresh(), before=s.coins;win(s);assert.equal(s.coins,before+12);for(let i=0;i<6;i++)assert(!J.flip(s,i).ok);assert.equal(s.coins,before+12);valid(s);});
+test('a replay is playable but gives no duplicate reward that day',()=>{const s=fresh();win(s);const before=s.coins;assert(J.replay(s,()=>.5).ok);win(s);assert.equal(s.coins,before);assert.equal(J.record(s).gamesWon,1);valid(s);});
+test('a completed game can earn its next reward on another day',()=>{const s=fresh();win(s);day(s);assert(J.replay(s,()=>.5).ok);const before=s.coins;win(s);assert.equal(s.coins,before+12);assert.equal(J.record(s).gamesWon,2);valid(s);});
+test('mismatched cards wait for an explicit accessible continue action',()=>{const s=fresh();J.startMemory(s,()=>.5);const m=s.journey.memory;const other=m.deck.findIndex(v=>v!==m.deck[0]);J.flip(s,0);assert(J.flip(s,other).mismatch);assert(!J.flip(s,5).ok);assert(J.hideCards(s).ok);assert.equal(m.open.length,0);valid(s);});
+test('unfinished games survive serialisation and preserve their owner',()=>{const s=fresh(), owner=s.active;J.startMemory(s,()=>.5);J.flip(s,0);G.rescue(s,'rabbit','ルゥ');const loaded=JSON.parse(JSON.stringify(s));assert(J.startMemory(loaded).resumed);assert.equal(loaded.journey.memory.petId,owner);assert.deepEqual(loaded.journey.memory.open,[0]);valid(loaded);});
+test('an unfinished game cannot be discarded by replay',()=>{const s=fresh();J.startMemory(s);const before=JSON.stringify(s);assert(!J.replay(s).ok);assert.equal(JSON.stringify(s),before);});
+test('dead creatures and ongoing adventures cannot generate daily rewards',()=>{const s=fresh();J.ensure(s);G.beginAdventure(s);for(const w of Object.keys(J.WISHES))assert(!J.mark(s,w));assert(!J.startMemory(s).ok);assert(!J.chooseStory(s,J.story(s).id,0).ok);G.finishAdventure(s,true);G.active(s).dead=true;G.active(s).health=0;assert(!J.claim(s).ok);assert(!J.startMemory(s).ok);valid(s);});
+test('same-day story selection is stable across reloads',()=>{const s=fresh();assert.equal(J.story(s).id,J.story(JSON.parse(JSON.stringify(s))).id);assert.equal(J.STORIES.length,8);});
+test('each story has two valid original choices',()=>{assert.equal(new Set(J.STORIES.map(x=>x.id)).size,8);for(const e of J.STORIES){assert.equal(e.choices.length,2);for(const c of e.choices){assert(Object.hasOwn(G.ABILITIES,c.ability));assert(Object.hasOwn(G.LABELS,c.trait));assert(c.reply.length>10);}}});
+test('daily stories reward once and keep personality within inherited bounds',()=>{const s=fresh(), e=J.story(s), c=G.active(s), key=e.choices[0].ability, before=c[key], coins=s.coins;assert(J.chooseStory(s,e.id,0).ok);assert.equal(c[key],before+.6);assert.equal(s.coins,coins+6);assert(!J.chooseStory(s,e.id,1).ok);assert.equal(s.coins,coins+6);assert(J.record(s).wishes.includes('play'));valid(s);});
+test('a stale or invalid story choice cannot mutate game state',()=>{const s=fresh();J.record(s);const before=JSON.stringify(s);for(const [id,index] of [['missing',0],[J.story(s).id,-1],[J.story(s).id,2]])assert(!J.chooseStory(s,id,index).ok);assert.equal(JSON.stringify(s),before);});
+test('the album unlocks earned milestones and never duplicates entries',()=>{const s=fresh();assert.equal(J.collect(s).length,0);G.talk(s,'大好きだよ');assert(J.collect(s).some(x=>x.id==='first-words'));assert.equal(J.collect(s).length,0);win(s);assert(J.collect(s).some(x=>x.id==='first-game'));valid(s);});
+test('album dates and identifiers are checked when importing',()=>{const s=fresh();G.talk(s,'大好き');J.collect(s);const a=structuredClone(s);a.journey.album.push({...a.journey.album[0]});assert(!J.validate(a));const b=structuredClone(s);b.journey.album[0].at=s.clockAt+1;assert(!J.validate(b));const c=structuredClone(s);c.journey.album[0].id='unknown';assert(!J.validate(c));});
+test('malformed decks and mismatched completed flags are rejected',()=>{const s=fresh();J.startMemory(s);for(const mutate of [x=>x.deck[0]=9,x=>x.open=[0,0],x=>x.matched=[0,0],x=>x.complete=true,x=>x.rewarded=true]){const copy=structuredClone(s);mutate(copy.journey.memory);assert(!J.validate(copy));}});
+test('unknown residents or duplicate wishes cannot be imported',()=>{const s=fresh();J.record(s);let c=structuredClone(s);c.journey.residents.unknown={...J.record(s)};assert(!J.validate(c));c=structuredClone(s);c.journey.residents[s.active].wishes=['care','care'];assert(!J.validate(c));});
+test('all rewards respect the supported currency boundary',()=>{const s=fresh();s.coins=1e9;win(s);J.chooseStory(s,J.story(s).id,0);for(const w of Object.keys(J.WISHES))J.mark(s,w);J.claim(s);assert.equal(s.coins,1e9);valid(s);});
+test('long play-through remains serialisable through adulthood and later life',()=>{let s=fresh();for(let n=0;n<24;n++){G.care(s,'feed');G.care(s,'bath');G.talk(s,'よく頑張ったね');J.mark(s,'care');J.mark(s,'talk');J.chooseStory(s,J.story(s).id,n%2);J.claim(s);if(G.age(s,G.active(s))>=8)G.setJob(s,'herbalist');J.collect(s);valid(s);s=JSON.parse(JSON.stringify(s));day(s);}assert(J.collect(s).length>=0);assert(s.journey.album.some(x=>x.id==='twenty'));valid(s);});
