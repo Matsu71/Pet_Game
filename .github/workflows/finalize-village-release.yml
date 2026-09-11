@@ -40,10 +40,10 @@ jobs:
           let text=fs.readFileSync('village.css','utf8');
           if(!text.includes('.discovery-icons .locked{opacity:1;filter:none}'))fs.writeFileSync('village.css',text+css);
           let sw=fs.readFileSync('sw.js','utf8');
-          assert(sw.includes('village2')||sw.includes('village3'));
-          fs.writeFileSync('sw.js',sw.replace('village2','village3'));
+          assert(sw.includes('village-2')||sw.includes('village-3'));
+          fs.writeFileSync('sw.js',sw.replace('village-2','village-3'));
           let test=fs.readFileSync('tests/delivery.test.cjs','utf8');
-          fs.writeFileSync('tests/delivery.test.cjs',test.replaceAll('village2','village3'));
+          fs.writeFileSync('tests/delivery.test.cjs',test.replaceAll('village-2','village-3'));
           const s=G.fresh();assert(G.validate(s)&&J.validate(s)&&V.validate(s));
           NODE
       - name: Pin patched verification dependency and install browsers
