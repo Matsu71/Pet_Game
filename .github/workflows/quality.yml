@@ -1,7 +1,7 @@
 name: Game quality
 on:
   push:
-    branches: [main, 'improve/mobile-quality-2026-09-11']
+    branches: [main, 'improve/**']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -23,6 +23,7 @@ jobs:
       - name: Install reproducible verification tools
         run: |
           npm ci
+          npm audit --audit-level=high
           npx playwright install --with-deps chromium webkit
       - name: Verify source and all gameplay paths
         shell: bash
@@ -36,7 +37,7 @@ jobs:
           SERVER_PID=$!
           trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:4173/village.js > /dev/null; then break; fi
+            if curl --fail --silent http://127.0.0.1:4173/world.js > /dev/null; then break; fi
             sleep 1
           done
           npm run test:browser | tee quality-artifacts/browser.log
