@@ -1,0 +1,44 @@
+name: Game quality
+
+on:
+  push:
+    branches: [main, 'improve/mobile-quality-2026-09-11']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: game-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check game.js
+          node --check app.js
+          node --check server.cjs
+      - name: Game rules
+        run: npm test
+      - name: Package exact source for reproducible review
+        if: always()
+        run: |
+          mkdir -p quality-artifacts
+          git archive --format=zip HEAD > quality-artifacts/source.zip
+          git rev-parse HEAD > quality-artifacts/commit.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-review-${{ github.sha }}
+          path: quality-artifacts/
+          retention-days: 14
