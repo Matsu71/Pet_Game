@@ -1,0 +1,88 @@
+name: Integrate and verify mobile quality
+
+on:
+  push:
+    branches: ['improve/mobile-quality-2026-09-11']
+    paths:
+      - 'scripts/integrate-mobile-quality.cjs'
+      - '.github/workflows/integrate-mobile-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: integrate-mobile-quality-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    if: github.repository == 'Matsu71/Pet_Game' && github.ref == 'refs/heads/improve/mobile-quality-2026-09-11'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Recover and integrate the previously authored source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/integrate-mobile-quality.cjs
+      - name: Install pinned verification tools
+        run: |
+          npm install --save-dev --save-exact playwright@1.55.0 axe-core@4.10.3
+          npx playwright install --with-deps chromium webkit
+      - name: Rule and save regression tests
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p quality-artifacts
+          npm test | tee quality-artifacts/unit.tap
+      - name: Browser acceptance tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm start > quality-artifacts/server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:browser | tee quality-artifacts/browser.log
+      - name: Record verified outcomes and exact source hashes
+        run: node scripts/integrate-mobile-quality.cjs --report
+      - name: Commit the verified increment to the improvement branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH='improve/mobile-quality-2026-09-11'
+          REMOTE_HEAD=$(git ls-remote origin "refs/heads/$BRANCH" | cut -f1)
+          if [ "$REMOTE_HEAD" != "$GITHUB_SHA" ]; then
+            echo 'The branch changed while testing. Refusing to overwrite concurrent work.'
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add game.js journey.js persistence.js art.js app.js style.css index.html offline.js sw.js manifest.webmanifest assets/icon-192.png assets/icon-512.png package.json package-lock.json README.md tests docs
+          git diff --cached --check
+          git commit -m 'feat: publish verified mobile care, daily stories, album and offline support'
+          git push origin "HEAD:refs/heads/$BRANCH"
+          git rev-parse HEAD > quality-artifacts/verified-commit.txt
+      - name: Preserve source, screenshots and failed-test evidence
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p quality-artifacts
+          git diff > quality-artifacts/uncommitted.diff
+          tar --exclude='./node_modules' --exclude='./.git' --exclude='./quality-artifacts' -czf /tmp/pet-game-reviewed-source.tar.gz .
+          cp /tmp/pet-game-reviewed-source.tar.gz quality-artifacts/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-quality-verification-${{ github.run_id }}
+          path: quality-artifacts/
+          retention-days: 30
