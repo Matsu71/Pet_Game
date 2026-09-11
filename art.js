@@ -3,6 +3,8 @@
   'use strict';
   const G = window.ForestGame;
   const icons = {
+    acorn: '<path d="M5 10h14v3c0 5-4 8-7 9-3-1-7-4-7-9Z"/><path d="M3 10c0-5 18-5 18 0M12 6V2m0 2 4-2"/>',
+    flower: '<circle cx="12" cy="12" r="3"/><path d="M9 8C3-1 18-1 15 8c9-6 13 7 3 7 6 8-7 12-9 3-8 6-12-7-3-9"/>',
     leaf: '<path d="M5 19C3 8 9 3 21 3c0 12-5 18-16 16Z"/><path d="m3 21 12-12m-7 7-1-5m5 1h5"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5"/>',
     moon: '<path d="M20 15.5A9 9 0 0 1 8.5 4 9 9 0 1 0 20 15.5Z"/>',

@@ -1,0 +1,72 @@
+[
+  {
+    "name": "My Talking Tom 2",
+    "developer": "Outfit7 Limited",
+    "category": "育成・ミニゲーム",
+    "source": "https://apps.apple.com/us/app/my-talking-tom-2/id1337578317?uo=4",
+    "metadataSource": "https://itunes.apple.com/search?term=My+Talking+Tom+2&entity=software&country=us&limit=10",
+    "checkedAt": "2026-09-11T09:59:55.023Z",
+    "region": "US",
+    "version": "26.4.9",
+    "ratings": 858319,
+    "rating": 4.44574,
+    "descriptionHash": "088038cd5c1564f04896c752fa5d77daadd37116dbae0f69a4d3729480e2e324",
+    "featuresMentionedInDescription": {
+      "care": true,
+      "decoration": true,
+      "minigames": true,
+      "exploration": true,
+      "collection": true,
+      "dailyVisit": false
+    }
+  },
+  {
+    "name": "Tamagotchi Adventure Kingdom",
+    "developer": "Bandai Namco Entertainment Inc.",
+    "category": "育成・探索・冒険",
+    "source": "https://apps.apple.com/us/app/tamagotchi-adventure-kingdom/id1614952689?uo=4",
+    "metadataSource": "https://itunes.apple.com/search?term=Tamagotchi+Adventure+Kingdom&entity=software&country=us&limit=10",
+    "checkedAt": "2026-09-11T09:59:55.040Z",
+    "region": "US",
+    "version": "3.0.4",
+    "ratings": 11693,
+    "rating": 4.77534,
+    "descriptionHash": "ae47f737e82cc7bfbd58c62265511ce92316e9d31dfedd3f654c20cf27959c86",
+    "featuresMentionedInDescription": {
+      "care": false,
+      "decoration": true,
+      "minigames": false,
+      "exploration": true,
+      "collection": false,
+      "dailyVisit": false
+    }
+  },
+  {
+    "name": "Animal Crossing Pocket Camp Complete",
+    "category": "収集・装飾・村づくり",
+    "metadataSource": "https://itunes.apple.com/search?term=Animal+Crossing+Pocket+Camp+Complete&entity=software&country=us&limit=10",
+    "checkedAt": "2026-09-11T09:59:55.073Z",
+    "unavailable": "Exact title not returned by official search"
+  },
+  {
+    "name": "Finch: Self-Care Pet",
+    "developer": "Finch Care Public Benefit Corporation",
+    "category": "隣接分野：日々の訪問と愛着",
+    "source": "https://apps.apple.com/us/app/finch-self-care-pet/id1528595748?uo=4",
+    "metadataSource": "https://itunes.apple.com/search?term=Finch+self+care+pet&entity=software&country=us&limit=10",
+    "checkedAt": "2026-09-11T09:59:55.137Z",
+    "region": "US",
+    "version": "3.73.205",
+    "ratings": 750283,
+    "rating": 4.94736,
+    "descriptionHash": "00321324fe9e876c29cf1ccf9c27494e33cca5ddffa9274904a687bc6be18e5b",
+    "featuresMentionedInDescription": {
+      "care": true,
+      "decoration": false,
+      "minigames": false,
+      "exploration": true,
+      "collection": false,
+      "dailyVisit": true
+    }
+  }
+]

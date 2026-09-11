@@ -1,0 +1,570 @@
+{
+  "testedAt": "2026-09-11T10:01:05.258Z",
+  "inputCommit": "4b38eaf56082882a425718b680709c7f945af380",
+  "tests": 70,
+  "failures": 0,
+  "browser": {
+    "sourceCommit": "4b38eaf56082882a425718b680709c7f945af380",
+    "startedAt": "2026-09-11T10:00:34.590Z",
+    "engines": [
+      {
+        "engine": "chromium",
+        "status": "passed",
+        "checks": [
+          "safe text and naming",
+          "care and natural-language encouragement",
+          "seven viewport sizes; primary touch targets; unobscured garden control",
+          "memory game and interrupted-session recovery",
+          "daily story and one-time celebration",
+          "persistent decorations without repeated charges",
+          "adventure resume and finish",
+          "tutorial through adulthood and non-duplicated wages",
+          "resident collection and memory album",
+          "independent demo and real villages",
+          "export, invalid import rejection and explicit replacement confirmation",
+          "cross-tab save notification",
+          "recovery from a damaged primary save",
+          "no critical or serious automated accessibility violations on home",
+          "offline reload and interaction",
+          "play remains available when storage is denied",
+          "direct file launch without a server"
+        ],
+        "viewportChecks": [
+          {
+            "width": 320,
+            "height": 568,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 64,
+                "height": 60.796875,
+                "bottom": 474.484375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 64,
+                "height": 60.796875,
+                "bottom": 474.484375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 64,
+                "height": 60.796875,
+                "bottom": 474.484375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 64,
+                "height": 60.796875,
+                "bottom": 474.484375,
+                "aboveNavigation": true
+              }
+            ]
+          },
+          {
+            "width": 360,
+            "height": 640,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 72,
+                "height": 60.796875,
+                "bottom": 474.484375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 72,
+                "height": 60.796875,
+                "bottom": 474.484375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 72,
+                "height": 60.796875,
+                "bottom": 474.484375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 72,
+                "height": 60.796875,
+                "bottom": 474.484375,
+                "aboveNavigation": true
+              }
+            ]
+          },
+          {
+            "width": 375,
+            "height": 667,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 75.75,
+                "height": 60.796875,
+                "bottom": 474.484375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 75.75,
+                "height": 60.796875,
+                "bottom": 474.484375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 75.75,
+                "height": 60.796875,
+                "bottom": 474.484375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 75.75,
+                "height": 60.796875,
+                "bottom": 474.484375,
+                "aboveNavigation": true
+              }
+            ]
+          },
+          {
+            "width": 390,
+            "height": 844,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 77,
+                "height": 64,
+                "bottom": 711.09375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 77,
+                "height": 64,
+                "bottom": 711.09375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 77,
+                "height": 64,
+                "bottom": 711.09375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 77,
+                "height": 64,
+                "bottom": 711.09375,
+                "aboveNavigation": true
+              }
+            ]
+          },
+          {
+            "width": 412,
+            "height": 915,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 82.5,
+                "height": 64,
+                "bottom": 711.09375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 82.5,
+                "height": 64,
+                "bottom": 711.09375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 82.5,
+                "height": 64,
+                "bottom": 711.09375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 82.5,
+                "height": 64,
+                "bottom": 711.09375,
+                "aboveNavigation": true
+              }
+            ]
+          },
+          {
+            "width": 768,
+            "height": 1024,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 85,
+                "height": 72,
+                "bottom": 783.09375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 85,
+                "height": 72,
+                "bottom": 783.09375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 85,
+                "height": 72,
+                "bottom": 783.09375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 85,
+                "height": 72,
+                "bottom": 783.09375,
+                "aboveNavigation": true
+              }
+            ]
+          },
+          {
+            "width": 1280,
+            "height": 900,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 134.109375,
+                "height": 72,
+                "bottom": 783.09375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 134.125,
+                "height": 72,
+                "bottom": 783.09375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 134.125,
+                "height": 72,
+                "bottom": 783.09375,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 134.125,
+                "height": 72,
+                "bottom": 783.09375,
+                "aboveNavigation": true
+              }
+            ]
+          }
+        ],
+        "accessibility": [],
+        "errors": []
+      },
+      {
+        "engine": "webkit",
+        "status": "passed",
+        "checks": [
+          "safe text and naming",
+          "care and natural-language encouragement",
+          "seven viewport sizes; primary touch targets; unobscured garden control",
+          "memory game and interrupted-session recovery",
+          "daily story and one-time celebration",
+          "persistent decorations without repeated charges",
+          "adventure resume and finish",
+          "tutorial through adulthood and non-duplicated wages",
+          "resident collection and memory album",
+          "independent demo and real villages",
+          "export, invalid import rejection and explicit replacement confirmation",
+          "cross-tab save notification",
+          "recovery from a damaged primary save",
+          "no critical or serious automated accessibility violations on home",
+          "play remains available when storage is denied",
+          "direct file launch without a server"
+        ],
+        "viewportChecks": [
+          {
+            "width": 320,
+            "height": 568,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 64,
+                "height": 60,
+                "bottom": 473,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 64,
+                "height": 60,
+                "bottom": 473,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 64,
+                "height": 60,
+                "bottom": 473,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 64,
+                "height": 60,
+                "bottom": 473,
+                "aboveNavigation": true
+              }
+            ]
+          },
+          {
+            "width": 360,
+            "height": 640,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 72,
+                "height": 60,
+                "bottom": 473,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 72,
+                "height": 60,
+                "bottom": 473,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 72,
+                "height": 60,
+                "bottom": 473,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 72,
+                "height": 60,
+                "bottom": 473,
+                "aboveNavigation": true
+              }
+            ]
+          },
+          {
+            "width": 375,
+            "height": 667,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 75.75,
+                "height": 60,
+                "bottom": 473,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 75.75,
+                "height": 60,
+                "bottom": 473,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 75.75,
+                "height": 60,
+                "bottom": 473,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 75.75,
+                "height": 60,
+                "bottom": 473,
+                "aboveNavigation": true
+              }
+            ]
+          },
+          {
+            "width": 390,
+            "height": 844,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 77,
+                "height": 64,
+                "bottom": 711,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 77,
+                "height": 64,
+                "bottom": 711,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 77,
+                "height": 64,
+                "bottom": 711,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 77,
+                "height": 64,
+                "bottom": 711,
+                "aboveNavigation": true
+              }
+            ]
+          },
+          {
+            "width": 412,
+            "height": 915,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 82.5,
+                "height": 64,
+                "bottom": 711,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 82.5,
+                "height": 64,
+                "bottom": 711,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 82.5,
+                "height": 64,
+                "bottom": 711,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 82.5,
+                "height": 64,
+                "bottom": 711,
+                "aboveNavigation": true
+              }
+            ]
+          },
+          {
+            "width": 768,
+            "height": 1024,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 85,
+                "height": 72,
+                "bottom": 783,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 85,
+                "height": 72,
+                "bottom": 783,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 85,
+                "height": 72,
+                "bottom": 783,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 85,
+                "height": 72,
+                "bottom": 783,
+                "aboveNavigation": true
+              }
+            ]
+          },
+          {
+            "width": 1280,
+            "height": 900,
+            "overflow": false,
+            "controls": [
+              {
+                "action": "feed",
+                "width": 134.109375,
+                "height": 72,
+                "bottom": 783,
+                "aboveNavigation": true
+              },
+              {
+                "action": "bath",
+                "width": 134.125,
+                "height": 72,
+                "bottom": 783,
+                "aboveNavigation": true
+              },
+              {
+                "action": "talk-open",
+                "width": 134.125,
+                "height": 72,
+                "bottom": 783,
+                "aboveNavigation": true
+              },
+              {
+                "action": "play-open",
+                "width": 134.125,
+                "height": 72,
+                "bottom": 783,
+                "aboveNavigation": true
+              }
+            ]
+          }
+        ],
+        "accessibility": [],
+        "errors": []
+      }
+    ],
+    "scope": "Browser emulation, not physical-device or user-retention testing.",
+    "status": "passed",
+    "finishedAt": "2026-09-11T10:01:05.208Z"
+  },
+  "sourceHashes": {
+    "game.js": "4ac265f98adf8ca8eae8d4c5b1f0b8d7cb66336869daea97cb372fec724b4226",
+    "journey.js": "ad5c75cc2db3a33c8315c38623c0cb3f34bc70d968024870bf5e76596237a1db",
+    "persistence.js": "0ea0d80d70bf357a7ac7a5ea8f30ee7ae69f9f4f31dd2a503ad971cf9f8060b8",
+    "art.js": "907c9ca8259176dbf1369bf070ecc79704dda770381c3810eee88b1e6ee0524b",
+    "app.js": "4ab4fca69af7aa0f3ec8a7217747961dfc17c669608139e3f30111854e474e6f",
+    "style.css": "a6070abb2ddf2100189f20ca3c2add995f5a1201a192ccf87a0de8d8cfe9d286",
+    "index.html": "3e4c3f84e0734f6d40ed8e29ed4d3183e005d34301d3e29a1464f937741ecc3c",
+    "offline.js": "b1f216cb8a0b181a3112f028c366de7f3338bc8bd028ed0dc3a6cfabb20641cd",
+    "sw.js": "cb69d3c11270484989958830d7a552e05393d2287cf3bf5d44994f17774b0c6b"
+  },
+  "scope": "Automated local-server/browser emulation; no claim of physical-device or competitive superiority."
+}

@@ -70,7 +70,7 @@
     };
   }
   function fresh(mode = 'demo', name = 'ミオ', species = 'fox', now = Date.now(), random = Math.random) {
-    const c = make(name, SPECIES[species] ? species : 'fox', now, random);
+    const c = make(name, Object.hasOwn(SPECIES, species) ? species : 'fox', now, random);
     const s = { version: 2, mode, startedAt: now, clockAt: now, coins: 30, active: c.id, creatures: [c], logs: [], quests: [], adventure: null, discovered: [c.species] };
     log(s, `森のはずれで、${c.name}と出会いました。今日から一緒の暮らしが始まります。`, 'milestone');
     return s;
@@ -79,7 +79,7 @@
   function quest(s, id) {
     if (s.quests.includes(id)) return;
     s.quests.push(id);
-    const q = QUESTS.find(q => q.id === id); s.coins += q.reward;
+    const q = QUESTS.find(q => q.id === id); s.coins = Math.min(1e9, s.coins + q.reward);
     log(s, `「${q.name}」を達成。お祝いに ${q.reward} G が届きました。`, 'milestone');
   }
   function xp(s, c, amount) {
@@ -88,7 +88,7 @@
   }
   function work(s, c, workAge) {
     if (c.dead || workAge < 8 || workAge >= 50 || c.job === 'none' || c.lastWorkAge >= workAge) return;
-    const j = JOBS[c.job]; c.lastWorkAge = workAge; s.coins += j.coins; xp(s, c, j.xp);
+    const j = JOBS[c.job]; c.lastWorkAge = workAge; s.coins = Math.min(1e9, s.coins + j.coins); xp(s, c, j.xp);
     Object.keys(ABILITIES).forEach((k, i) => { c[k] = clamp(c[k] + j.growth[i]); });
     Object.entries(j.traits).forEach(([k, v]) => trait(c, k, v)); c.memory.work++;
     log(s, `${c.name}は${j.name}の仕事をして、${j.coins} G を受け取りました。`, 'work'); quest(s, 'work');
@@ -192,20 +192,21 @@
   }
   function setJob(s, key) {
     const c = active(s);
-    if (!c || c.dead || age(s, c) < 8 || s.adventure || !JOBS[key]) return { ok: false, message: '仕事は8歳から選べます。' };
+    if (!c || c.dead || age(s, c) < 8 || s.adventure || !Object.hasOwn(JOBS, key)) return { ok: false, message: '仕事は8歳から選べます。' };
     c.job = key; log(s, `${c.name}の仕事を「${JOBS[key].name}」にしました。`, 'work');
     work(s, c, age(s, c));
     return { ok: true, message: key === 'none' ? '少しゆっくり過ごすことにしました。' : `${JOBS[key].name}としての暮らしが始まります。` };
   }
   function rescue(s, species, name) {
-    if (alive(s).length >= MAX || s.adventure || !SPECIES[species]) return { ok: false, message: '村で暮らせるのは8体までです。' };
+    if (s.creatures.length >= 200) return {ok: false, message: 'この村の記録は200体に達しました。設定から記録を書き出して保管してください。'};
+    if (alive(s).length >= MAX || s.adventure || !Object.hasOwn(SPECIES, species)) return { ok: false, message: '村で暮らせるのは8体までです。' };
     const c = make(name, species, s.clockAt); s.creatures.push(c); s.active = c.id;
     if (!s.discovered.includes(species)) s.discovered.push(species);
     log(s, `${c.name}を森で保護しました。村の新しい仲間です。`, 'milestone');
     return { ok: true, message: `${c.name}、これからよろしくね。` };
   }
   function buy(s, item) {
-    const c = active(s), i = ITEMS[item];
+    const c = active(s), i = Object.hasOwn(ITEMS, item) ? ITEMS[item] : null;
     if (!c || c.dead || s.adventure || !i) return { ok: false, message: '今は買い物できません。' };
     if (s.coins < i.price) return { ok: false, message: 'お金が足りません。探索や仕事で集めましょう。' };
     if (item === 'scarf' && c.scarf) return { ok: false, message: 'この子はもう持っています。' };
@@ -241,7 +242,7 @@
     if (!a || (!retreat && a.step < ENCOUNTERS.length)) return { ok: false, message: 'まだ探索の途中です。' };
     const c = s.creatures.find(c => c.id === a.petId);
     if (!c || c.dead) { s.adventure = null; return { ok: false, message: '探索を終了しました。' }; }
-    const coins = a.coins, amount = a.xp; s.coins += coins; xp(s, c, amount);
+    const coins = a.coins, amount = a.xp; s.coins = Math.min(1e9, s.coins + coins); xp(s, c, amount);
     if (a.step === ENCOUNTERS.length) { c.memory.adventure++; quest(s, 'adventure'); }
     c.reply = 'ただいま！森で、いろんなものを見つけたんだよ。';
     log(s, `${c.name}が探索から帰宅。${coins} G と ${amount} XP を持ち帰りました。`, 'adventure');
@@ -254,7 +255,7 @@
     if (!Array.isArray(s.creatures) || !s.creatures.length || s.creatures.length > 200 || s.creatures.some(c => !c || typeof c !== 'object') || alive(s).length > MAX) return false;
     const ids = new Set();
     for (const c of s.creatures) {
-      if (!c || !boundedString(c.id, 100) || !/^[a-zA-Z0-9_-]+$/.test(c.id) || ids.has(c.id) || !boundedString(c.name, 16) || !c.name.trim() || !Object.hasOwn(SPECIES, c.species) || !Object.hasOwn(JOBS, c.job)) return false;
+      if (!c || !boundedString(c.id, 100) || !/^[a-zA-Z0-9_-]+$/.test(c.id) || ids.has(c.id) || !boundedString(c.name, 16) || !c.name.trim() || typeof c.species !== 'string' || !Object.hasOwn(SPECIES, c.species) || typeof c.job !== 'string' || !Object.hasOwn(JOBS, c.job)) return false;
       ids.add(c.id);
       if (!finite(c.bornAt, 0, s.clockAt) || !finite(c.lastAt, c.bornAt, s.clockAt) || !finite(c.level, 1, 1000) || !Number.isInteger(c.level) || !finite(c.xp, 0, c.level * 40 - .00001) || !finite(c.neglectHours, 0, 1e6)) return false;
       if (![c.dead, c.sick, c.scarf].every(x => typeof x === 'boolean')) return false;
@@ -263,10 +264,10 @@
       if (!c.personality || !c.personalityBase || !Object.keys(LABELS).every(k => finite(c.personality[k], 0, 100) && finite(c.personalityBase[k], 0, 100) && Math.abs(c.personality[k] - c.personalityBase[k]) <= 20.00001)) return false;
       if (!c.memory || !Object.keys(makeMemory()).every(k => finite(c.memory[k], 0, 1e9))) return false;
       if (!boundedString(c.reply) || !boundedString(c.deathReason) || !Array.isArray(c.saidToday) || c.saidToday.length > 3 || !c.saidToday.every(t => boundedString(t, 140))) return false;
-      if (!finite(c.talkToday, 0, 3) || !finite(c.lastWorkAge, -1, 50) || ![c.talkDay, c.lastDungeonDay].every(v => v === null || boundedString(v, 20))) return false;
+      if (!Number.isInteger(c.talkToday) || !Number.isInteger(c.lastWorkAge) || !finite(c.talkToday, 0, 3) || !finite(c.lastWorkAge, -1, 50) || ![c.talkDay, c.lastDungeonDay].every(v => v === null || boundedString(v, 20))) return false;
     }
     if (!ids.has(s.active) || !Array.isArray(s.quests) || !s.quests.every(id => QUESTS.some(q => q.id === id)) || new Set(s.quests).size !== s.quests.length) return false;
-    if (!Array.isArray(s.discovered) || !s.discovered.every(k => Object.hasOwn(SPECIES, k))) return false;
+    if (!Array.isArray(s.discovered) || s.discovered.length > Object.keys(SPECIES).length || new Set(s.discovered).size !== s.discovered.length || !s.discovered.every(k => typeof k === 'string' && Object.hasOwn(SPECIES, k))) return false;
     if (!Array.isArray(s.logs) || s.logs.length > 150 || !s.logs.every(l => l && finite(l.at, 0, 8e15) && boundedString(l.text, 600) && boundedString(l.type, 40))) return false;
     if (s.adventure !== null) {
       const a = s.adventure;
@@ -287,7 +288,7 @@
       for (const key of ['hunger', 'hygiene', 'health', 'intelligence', 'vitality', 'strength']) if (Number.isFinite(previous[key])) c[key] = clamp(previous[key]);
       c.level = Math.max(1, Math.floor(previous.level || 1)); c.xp = clamp(previous.xp || 0, 0, c.level * 40 - 1);
       c.sick = !!previous.sick; c.dead = !!previous.dead; c.deathReason = String(previous.deathReason || '村の思い出になりました。');
-      c.job = JOBS[previous.job] ? previous.job : 'none'; c.lastWorkAge = Number.isFinite(previous.lastWorkAge) ? previous.lastWorkAge : Math.floor((now - born) / DAY);
+      c.job = Object.hasOwn(JOBS, previous.job) ? previous.job : 'none'; c.lastWorkAge = Number.isFinite(previous.lastWorkAge) ? previous.lastWorkAge : Math.floor((now - born) / DAY);
       c.lastWorkAge = clamp(c.lastWorkAge, -1, 50); c.lastDungeonDay = previous.lastDungeonDay || null;
       for (const k of Object.keys(LABELS)) {
         c.personalityBase[k] = clamp(previous.personalityBase?.[k] ?? previous.personality?.[k] ?? 50);

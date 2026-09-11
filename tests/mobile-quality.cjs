@@ -9,18 +9,22 @@ const OUTPUT=process.env.QA_OUTPUT||path.join(__dirname,'..','quality-artifacts'
 const KEY='forest-child-mvp-v2-demo';
 const results={sourceCommit:process.env.GITHUB_SHA||null,startedAt:new Date().toISOString(),engines:[],scope:'Browser emulation, not physical-device or user-retention testing.'};
 async function runEngine(name){
-  const browser=await playwright[name].launch({headless:true});
+  const browser=await playwright[name].launch({headless:true,...(name==='chromium' && process.env.CHROMIUM_PATH ? {executablePath:process.env.CHROMIUM_PATH} : {})});
   const output=path.join(OUTPUT,name);await fs.mkdir(output,{recursive:true});
-  const checks=[],errors=[];
+  const checks=[],errors=[],httpErrors=[]; let page;
   const check=(label)=>checks.push(label);
   try{
     const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce',acceptDownloads:true});
-    const page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));
+    page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));
     const click=action=>page.locator(`[data-action="${action}"]`).first().click();
     const read=()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),KEY);
     const nav=view=>page.locator(`.nav-button[data-view="${view}"]`).click();
     const close=()=>page.getByRole('button',{name:'閉じる',exact:true}).click();
-    await page.goto(BASE);await page.locator('#pet-name').fill('<b>ミオ</b>');await page.locator('[data-start="demo"]').click();
+    page.on('response',r=>{if(r.status()>=400)httpErrors.push({url:r.url(),status:r.status()});});
+    await page.goto(BASE);
+    await page.locator('#pet-name').waitFor({timeout:10000});
+    assert.deepEqual(errors,[], 'Runtime startup errors'); assert.deepEqual(httpErrors,[], 'Missing runtime assets');
+    await page.locator('#pet-name').fill('<b>ミオ</b>');await page.locator('[data-start="demo"]').click();
     assert.equal(await page.locator('.pet-name h2').innerText(),'<b>ミオ</b>');assert.equal(await page.locator('.pet-name h2 b').count(),0);
     await click('rename');await page.locator('#rename-input').fill('ミオ');await click('confirm-rename');check('safe text and naming');
     await click('feed');await click('bath');assert.equal((await read()).creatures[0].hunger,100);
@@ -87,6 +91,10 @@ async function runEngine(name){
     const fileContext=await browser.newContext({reducedMotion:'reduce'});const local=await fileContext.newPage();local.on('pageerror',e=>errors.push(e.message));await local.goto(pathToFileURL(path.join(__dirname,'..','index.html')).href);await local.locator('[data-start="demo"]').click();await local.locator('[data-action="feed"]').click();assert(await local.locator('.forest-art').evaluate(img=>img.complete&&img.naturalWidth>0));await fileContext.close();check('direct file launch without a server');
     assert.deepEqual(errors,[]);
     const summary={engine:name,status:'passed',checks,viewportChecks,accessibility,errors};results.engines.push(summary);await fs.writeFile(path.join(output,'result.json'),JSON.stringify(summary,null,2));await context.close();
+  }catch(error){
+    const failure={engine:name,status:'failed',checks,errors,httpErrors,error:error.stack};
+    if(page){try{await page.screenshot({path:path.join(output,'failure.png'),fullPage:true});await fs.writeFile(path.join(output,'failure.html'),await page.content());failure.visibleText=await page.locator('body').innerText();}catch(e){failure.captureError=e.message;}}
+    results.engines.push(failure); await fs.writeFile(path.join(output,'result.json'),JSON.stringify(failure,null,2)); throw error;
   }finally{await browser.close();}
 }
 (async()=>{

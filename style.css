@@ -18,3 +18,13 @@ dialog{color:var(--ink);background:var(--card);border:1px solid var(--line);bord
 .dialog-notice{display:none;position:sticky;bottom:0;padding:12px 14px!important;margin:16px 0 0!important;border-radius:12px;background:#2f4a36;color:#fffdf2!important;font-size:13px;box-shadow:0 2px 10px #21382422}.dialog-notice.visible{display:block}
 
 .pet-name h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pet-heading>div:first-child{min-width:0}
+
+/* Mobile quality increment: details remain optional and controls stay reachable. */
+.story-shortcut{display:flex;align-items:center;gap:12px;padding:18px 16px;text-align:left;width:100%;min-height:96px}.story-shortcut>span{display:grid;gap:4px;flex:1}.story-shortcut small{font-size:12px;font-weight:400;color:var(--muted)}.story-shortcut strong{font-size:16px}.story-shortcut:disabled{opacity:.78}
+.album-section{margin-bottom:20px}.album-section>p{font-size:13px;margin:8px 0 18px}.album-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.album-card{padding:16px 12px;text-align:center;border:1px dashed #bac9b0;border-radius:16px;background:#f3f3e9}.album-card.earned{border:1px solid #c9d9b6;background:#e9efdb}.album-card>span{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;background:#ffffffaa;color:#49673c}.album-card h3{font-size:13px;margin:9px 0 5px}.album-card p{font-size:12px;line-height:1.65}
+.care-hint,.scene-caption{font-size:12px}.stat-label{font-size:12px}.pet-meta{font-size:13px}.profile-link{font-size:12px}.bond-note{font-size:12px}
+@media(min-width:760px){.album-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-height:700px) and (max-width:759px){.care-hint{font-size:11px}.scene-caption{font-size:10px}.pet-meta{font-size:11px}}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.scene-top{z-index:5}.pet-speech{pointer-events:none}
+@media(max-height:700px) and (max-width:759px){.scene-top{justify-content:flex-end}}
