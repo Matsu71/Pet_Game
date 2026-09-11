@@ -1,0 +1,63 @@
+name: Mobile browser regression
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, 'improve/mobile-quality-2026-09-11']
+    paths:
+      - '**.js'
+      - '**.cjs'
+      - '**.css'
+      - 'index.html'
+      - 'manifest.webmanifest'
+      - 'assets/**'
+      - 'package*.json'
+      - '.github/workflows/mobile-browser-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm the complete integrated source is present
+        run: |
+          test -f persistence.js
+          test -f package-lock.json
+          test -f tests/mobile-quality.cjs
+      - name: Install locked verification dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium webkit
+      - name: Rule and browser regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p quality-artifacts
+          npm test | tee quality-artifacts/unit.tap
+          npm start > quality-artifacts/server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:browser | tee quality-artifacts/browser.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-browser-${{ github.sha }}
+          path: quality-artifacts/
+          retention-days: 30
