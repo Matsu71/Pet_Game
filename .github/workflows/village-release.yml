@@ -1,0 +1,74 @@
+name: Integrate and verify village release
+on:
+  push:
+    branches: ['improve/mobile-quality-2026-09-11']
+    paths: ['.github/workflows/village-release.yml', 'scripts/assemble-village.cjs']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: integrate-mobile-quality-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.repository == 'Matsu71/Pet_Game' && github.ref == 'refs/heads/improve/mobile-quality-2026-09-11'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Integrate only the reviewed inputs
+        run: node scripts/assemble-village.cjs
+      - name: Install reproducible browser tools
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium webkit
+      - name: Verify all rules and both browser engines
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p quality-artifacts
+          for file in *.js *.cjs scripts/*.cjs; do node --check "$file"; done
+          npm test | tee quality-artifacts/unit.tap
+          npm start > quality-artifacts/server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/village.js > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:browser | tee quality-artifacts/browser.log
+          node scripts/quality-report.cjs --publish > quality-artifacts/report.log
+          cat docs/QUALITY_REPORT.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish verified normal source and retire one-time assembly workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH='improve/mobile-quality-2026-09-11'
+          REMOTE_HEAD=$(git ls-remote origin "refs/heads/$BRANCH" | cut -f1)
+          test "$REMOTE_HEAD" = "$GITHUB_SHA" || { echo 'Concurrent edits detected; no overwrite.'; exit 1; }
+          rm -f .github/workflows/integrate-mobile-quality.yml .github/workflows/mobile-browser-quality.yml .github/workflows/resume-mobile-quality.yml .github/workflows/village-release.yml scripts/integrate-mobile-quality.cjs scripts/diagnose-browser.cjs scripts/assemble-village.cjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A .github scripts tests docs app.js index.html server.cjs sw.js package.json package-lock.json README.md village.js village-ui.js village.css
+          git diff --cached --check
+          git commit -m 'feat: village building and resident friendships with verified mobile gameplay'
+          git push origin "HEAD:refs/heads/$BRANCH"
+          git rev-parse HEAD > quality-artifacts/verified-commit.txt
+      - name: Retain current source and diagnostics
+        if: always()
+        run: |
+          mkdir -p quality-artifacts
+          git diff > quality-artifacts/uncommitted.diff
+          tar --exclude='./node_modules' --exclude='./.git' --exclude='./quality-artifacts' -czf /tmp/pet-game-reviewed-source.tar.gz .
+          cp /tmp/pet-game-reviewed-source.tar.gz quality-artifacts/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: village-release-${{ github.run_id }}
+          path: quality-artifacts/
+          retention-days: 30
