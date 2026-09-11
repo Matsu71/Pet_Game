@@ -1,7 +1,7 @@
 /* Preview only the public runtime. BASE_PATH=/Pet_Game/ exercises GitHub Pages. */
 'use strict';
 const http = require('node:http'), fs = require('node:fs'), path = require('node:path');
-const ASSETS = Object.freeze(['index.html', 'style.css', 'app.js', 'game.js', 'journey.js', 'art.js', 'village.js', 'village-ui.js', 'village.css', 'persistence.js', 'offline.js', 'sw.js', 'manifest.webmanifest', 'favicon.svg', 'assets/forest.svg', 'assets/icon-192.png', 'assets/icon-512.png']);
+const ASSETS = Object.freeze(['index.html', 'style.css', 'app.js', 'game.js', 'world.js', 'journey.js', 'art.js', 'village.js', 'village-ui.js', 'village.css', 'persistence.js', 'offline.js', 'sw.js', 'manifest.webmanifest', 'favicon.svg', 'assets/forest.svg', 'assets/icon-192.png', 'assets/icon-512.png']);
 const TYPES = Object.freeze({'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.webmanifest':'application/manifest+json; charset=utf-8'});
 function createServer({basePath='/'}={}) {
   if (!/^\/(?:[A-Za-z0-9_-]+\/)*$/.test(basePath)) throw new TypeError('BASE_PATH must be a path such as /Pet_Game/');

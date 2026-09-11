@@ -30,3 +30,17 @@ Appleの公式ストア検索APIから、同一地域（US）の開発元掲載�
 - Finch: Self-Care Pet: https://apps.apple.com/us/app/finch-self-care-pet/id1528595748?uo=4
 
 取得条件・バージョン・レビュー件数は research/competitors-20260911.json に記録しています。
+
+## 2026-09-11 追加の一次資料確認と0.9への反映
+前述のストアAPIでは未確認だった項目を、以下の開発元による掲載文で再確認しました。これは競合作品を実機でプレイした評価ではありません。
+
+| 比較対象 | 今回の一次資料で確認した特徴 | 本作への設計判断 |
+|---|---|---|
+| My Talking Tom 2（Outfit7公式） | お世話、食べ物、着せ替え、ペットとの遊び、ミニゲーム | 同じお世話の数値変化だけでなく、個体の性格で返事・しぐさが変わるようにしました。 |
+| Tamagotchi Adventure Kingdom（開発元のApp Store掲載文） | 探索、仲間の能力を使う障害解決、多様な場所・クエスト・登場人物、拠点の装飾 | 探索を4コース12場面に分け、能力で結果が変わる理由と、歩いた道の収集を見えるようにしました。 |
+
+本作はそれらと同じ物量やアニメーション品質に達した、という主張ではありません。1日数回の短い遊びとゲーム内で保持する個性を強めるための判断です。文章・キャラクター・画像の流用はしていません。
+
+参照資料：
+- Outfit7: https://talkingtomandfriends.com/apps/my-talking-tom-2
+- Bandai Namco Entertainment掲載: https://apps.apple.com/us/app/tamagotchi-adventure-kingdom/id1614952689 （開発元の説明欄。レビューを機能仕様の根拠にしていません。）

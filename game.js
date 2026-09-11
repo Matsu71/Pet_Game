@@ -1,6 +1,7 @@
 /* Shared, dependency-free simulation. Also loaded by the Node test runner. */
 (function (root) {
   'use strict';
+  const W = typeof module !== 'undefined' && module.exports ? require('./world.js') : root.ForestWorld;
   const DAY = 86400000, HOUR = 3600000, MAX = 8;
   const LABELS = { kindness: 'やさしさ', courage: '勇気', curiosity: '好奇心', discipline: '規律性', sociability: '社交性', emotionalStability: '情緒安定性' };
   const ABILITIES = { intelligence: '賢さ', vitality: '生命力', strength: '力' };
@@ -148,7 +149,7 @@
     if (before >= 100) return { ok: false, message: kind === 'feed' ? 'もうおなかいっぱい。またあとでね。' : '今はぴかぴか。またあとでね。' };
     c[key] = clamp(c[key] + (kind === 'feed' ? 42 : 48)); c.health = clamp(c.health + (c.sick ? 5 : 1));
     c.memory[kind]++; recover(s, c); quest(s, kind);
-    c.reply = kind === 'feed' ? 'もぐもぐ……おいしい！きみも一緒に食べようよ。' : 'ふわぁ、さっぱり。なんだか、いい匂いがする。';
+    c.reply = W.response(c, kind);
     const message = `${kind === 'feed' ? 'おなか' : 'きれい'} ${Math.round(before)} → ${Math.round(c[key])}`;
     log(s, `${c.name}に${kind === 'feed' ? 'ごはんをあげました' : 'お風呂に入ってもらいました'}。${message}`, 'care');
     return { ok: true, message };
@@ -186,7 +187,7 @@
     const growing = c.talkToday < 3 && !c.saidToday.includes(normalized);
     if (a && growing) for (const [k, delta] of Object.entries(a.delta)) { const before = c.personality[k]; trait(c, k, delta); if (Math.abs(c.personality[k] - before) > .001) changes.push(`${LABELS[k]} ${delta > 0 ? '+' : ''}${(c.personality[k] - before).toFixed(1)}`); }
     if (growing) { c.talkToday++; c.saidToday.push(normalized); }
-    c.memory.talk++; c.reply = a ? a.reply : age(s, c) < 3 ? '……うん。まだ難しいけど、きみの声、好きだな。' : 'うん、聞いてるよ。今日は木漏れ日がきれいだったね。';
+    c.memory.talk++; c.reply = a ? W.response(c, a.key) : age(s, c) < 3 ? '……うん。まだ難しいけど、きみの声、好きだな。' : W.response(c, 'quiet');
     quest(s, 'talk'); log(s, `${c.name}に「${text}」と声をかけました。`, 'talk');
     return { ok: true, message: changes.length ? changes.join(' / ') : growing ? '声を聞いて、うれしそうです。' : '今日の言葉は、もう十分に届いています。お話は何度でも。' };
   }
@@ -219,19 +220,35 @@
     log(s, `${c.name}に${i.name}を買いました。−${i.price} G`, 'care');
     return { ok: true, message: `${i.name}、気に入ってくれたみたい。` };
   }
-  function beginAdventure(s) {
+  const ROUTES = W.ROUTES;
+  function adventureRoute(s) { return s.adventure?.route || 'forest'; }
+  function encounters(s) { return ROUTES[adventureRoute(s)]?.encounters || ENCOUNTERS; }
+  function currentEncounter(s) { return s.adventure ? encounters(s)[s.adventure.step] || null : null; }
+  function previewChoice(s, choice) {
+    const c = s.creatures.find(c => c.id === s.adventure?.petId), e = currentEncounter(s);
+    if (!c || !e || ![0, 1].includes(choice)) return null;
+    const option = e.choices[choice], success = c[option.ability] >= option.threshold;
+    return {ability: option.ability, value: c[option.ability], threshold: option.threshold,
+      success, coins: success ? option.coins : Math.round(option.coins * .55), xp: option.xp};
+  }
+  function visitedRoutes(c) {
+    // Before v0.9 all completed journeys were in the original forest. Preserve that progress.
+    return c.trails ? [...c.trails] : c.memory.adventure > 0 ? ['forest'] : [];
+  }
+  function beginAdventure(s, route = 'forest') {
+    if (typeof route !== 'string' || !Object.hasOwn(ROUTES, route)) return {ok: false, message: 'その行き先は選べません。'};
     const c = active(s);
     if (!c || c.dead || c.sick || c.health < 40 || c.hunger < 20) return { ok: false, message: 'ごはんとお世話で元気になってから出かけましょう。' };
     if (s.adventure || c.lastDungeonDay === dayKey(s)) return { ok: false, message: '今日の探索はおしまい。また明日。' };
     c.lastDungeonDay = dayKey(s);
-    s.adventure = { petId: c.id, step: 0, coins: 0, xp: 0, lastText: '' };
-    log(s, `${c.name}が森の探索に出かけました。`, 'adventure'); return { ok: true, message: '小さな冒険へ、出発。' };
+    s.adventure = { petId: c.id, route, step: 0, coins: 0, xp: 0, lastText: '' };
+    log(s, `${c.name}が「${ROUTES[route].name}」の探索に出かけました。`, 'adventure'); return { ok: true, message: '小さな冒険へ、出発。' };
   }
   function chooseAdventure(s, choice) {
     const a = s.adventure;
     if (!a || a.step >= ENCOUNTERS.length || ![0, 1].includes(choice)) return { ok: false, message: 'その道は選べません。' };
     const c = s.creatures.find(c => c.id === a.petId); if (!c || c.dead) return { ok: false, message: '探索できません。' };
-    const option = ENCOUNTERS[a.step].choices[choice], success = c[option.ability] >= option.threshold;
+    const option = encounters(s)[a.step].choices[choice], success = c[option.ability] >= option.threshold;
     const coins = success ? option.coins : Math.round(option.coins * .55);
     a.coins += coins; a.xp += option.xp; a.lastText = success ? option.success : option.fail;
     c[option.ability] = clamp(c[option.ability] + 1.2); trait(c, option.trait, .18); c.hunger = clamp(c.hunger - 3);
@@ -243,9 +260,9 @@
     const c = s.creatures.find(c => c.id === a.petId);
     if (!c || c.dead) { s.adventure = null; return { ok: false, message: '探索を終了しました。' }; }
     const coins = a.coins, amount = a.xp; s.coins = Math.min(1e9, s.coins + coins); xp(s, c, amount);
-    if (a.step === ENCOUNTERS.length) { c.memory.adventure++; quest(s, 'adventure'); }
-    c.reply = 'ただいま！森で、いろんなものを見つけたんだよ。';
-    log(s, `${c.name}が探索から帰宅。${coins} G と ${amount} XP を持ち帰りました。`, 'adventure');
+    if (a.step === ENCOUNTERS.length) { c.trails = [...new Set([...visitedRoutes(c), adventureRoute(s)])]; c.memory.adventure++; quest(s, 'adventure'); }
+    c.reply = `ただいま！${ROUTES[adventureRoute(s)].name}で、小さな発見があったよ。`;
+    log(s, `${c.name}が「${ROUTES[adventureRoute(s)].name}」から帰宅。${coins} G と ${amount} XP を持ち帰りました。`, 'adventure');
     s.adventure = null; return { ok: true, message: `おかえり！ ${coins} G・${amount} XP を獲得。` };
   }
   function validate(s) {
@@ -263,6 +280,7 @@
       if (!['hunger', 'hygiene', 'health', ...Object.keys(ABILITIES)].every(k => finite(c[k], 0, 100))) return false;
       if (!c.personality || !c.personalityBase || !Object.keys(LABELS).every(k => finite(c.personality[k], 0, 100) && finite(c.personalityBase[k], 0, 100) && Math.abs(c.personality[k] - c.personalityBase[k]) <= 20.00001)) return false;
       if (!c.memory || !Object.keys(makeMemory()).every(k => finite(c.memory[k], 0, 1e9))) return false;
+      if (c.trails !== undefined && (!Array.isArray(c.trails) || c.trails.length > 4 || new Set(c.trails).size !== c.trails.length || c.trails.some(k => typeof k !== 'string' || !Object.hasOwn(ROUTES, k)))) return false;
       if (!boundedString(c.reply) || !boundedString(c.deathReason) || !Array.isArray(c.saidToday) || c.saidToday.length > 3 || !c.saidToday.every(t => boundedString(t, 140))) return false;
       if (!Number.isInteger(c.talkToday) || !Number.isInteger(c.lastWorkAge) || !finite(c.talkToday, 0, 3) || !finite(c.lastWorkAge, -1, 50) || ![c.talkDay, c.lastDungeonDay].every(v => v === null || boundedString(v, 20))) return false;
     }
@@ -271,6 +289,7 @@
     if (!Array.isArray(s.logs) || s.logs.length > 150 || !s.logs.every(l => l && finite(l.at, 0, 8e15) && boundedString(l.text, 600) && boundedString(l.type, 40))) return false;
     if (s.adventure !== null) {
       const a = s.adventure;
+      if (a?.route !== undefined && (typeof a.route !== 'string' || !Object.hasOwn(ROUTES, a.route))) return false;
       if (!a || !ids.has(a.petId) || !Number.isInteger(a.step) || !finite(a.step, 0, 3) || !finite(a.coins, 0, 200) || !finite(a.xp, 0, 100) || !boundedString(a.lastText)) return false;
     }
     return true;
@@ -300,7 +319,7 @@
     s.logs = []; log(s, 'これまでの試作版の仲間と所持金を引き継ぎました。', 'milestone');
     return validate(s) ? s : null;
   }
-  const api = { DAY, HOUR, MAX, LABELS, ABILITIES, SPECIES, JOBS, ITEMS, QUESTS, ENCOUNTERS, clamp, age, active, alive, dayKey, fresh, sync, advance, care, talk, classify, trait, setJob, rescue, buy, beginAdventure, chooseAdventure, finishAdventure, validate, migrate, log };
+  const api = { DAY, HOUR, MAX, LABELS, ABILITIES, SPECIES, JOBS, ITEMS, QUESTS, ENCOUNTERS, ROUTES, adventureRoute, currentEncounter, previewChoice, visitedRoutes, clamp, age, active, alive, dayKey, fresh, sync, advance, care, talk, classify, trait, setJob, rescue, buy, beginAdventure, chooseAdventure, finishAdventure, validate, migrate, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.ForestGame = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
